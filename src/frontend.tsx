@@ -7,19 +7,17 @@ function App() {
     <div className="relative min-h-screen overflow-hidden bg-[#f7f4ee] text-slate-900">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_60%),radial-gradient(circle_at_20%_80%,_rgba(251,191,36,0.16),_transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_60%),radial-gradient(circle_at_20%_80%,rgba(251,191,36,0.16),transparent_55%)]"
       />
       <main className="relative mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-10 px-6 py-20">
         <section className="space-y-6">
-          <p className="text-sm uppercase tracking-[0.4em] text-emerald-700/80">Anki + Code</p>
-          <h1 className="text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl">
-            Anki Code Cards
-          </h1>
+          <p className="text-sm tracking-[0.4em] text-emerald-700/80 uppercase">Anki + Code</p>
+          <h1 className="text-4xl leading-tight font-semibold text-slate-900 sm:text-5xl">Anki Code Cards</h1>
           <p className="max-w-2xl text-lg text-slate-700">
-            Cards with beautiful code in vanilla Anki. Draft, refine, and export clean snippets with a
-            lightweight toolkit.
+            Cards with beautiful code in vanilla Anki. Draft, refine, and export clean snippets with a lightweight
+            toolkit.
           </p>
-          <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-slate-600">
+          <div className="flex flex-wrap gap-3 text-xs tracking-[0.2em] text-slate-600 uppercase">
             <span className="rounded-full border border-slate-200/80 bg-white/70 px-4 py-2">Bun</span>
             <span className="rounded-full border border-slate-200/80 bg-white/70 px-4 py-2">React</span>
             <span className="rounded-full border border-slate-200/80 bg-white/70 px-4 py-2">Tailwind v4</span>

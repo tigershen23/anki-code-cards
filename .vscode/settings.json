@@ -5,5 +5,8 @@
   "oxc.typeAware": true,
   "[typescriptreact]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "files.exclude": {
+    ".agent/specs/archive": true
   }
 }

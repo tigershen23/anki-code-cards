@@ -2,6 +2,15 @@
 
 Cards with beautiful code in vanilla Anki. Built with React and Bun.
 
+## UI Components
+
+This project uses **shadcn/ui** with **Base UI** primitives (`@base-ui/react`). When building UI:
+
+- Always reach for shadcn components first (`@/components/ui/*`)
+- Add new shadcn components via `bunx --bun shadcn@latest add <component>`
+- Components are unstyled by default — style with Tailwind utilities
+- Refer to [ui.shadcn.com](https://ui.shadcn.com) for available components
+
 ## Development
 
 ### Dev Server (PM2-managed)
@@ -25,8 +34,12 @@ mise logs
 ### Testing
 
 ```bash
+# Unit tests
+mise test
+
 # E2E sanity check test (requires dev server running via PM2)
 mise test:e2e
+
 # Quick healthcheck (~1.3s) - use frequently during development
 mise healthcheck
 ```

@@ -23,7 +23,12 @@
 
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+
+    // shadcn/ui
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*", "*.ts"],
   "exclude": ["node_modules", "dist"]
