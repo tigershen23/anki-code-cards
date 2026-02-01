@@ -1,0 +1,123 @@
+[tasks.lint]
+description = "Run oxlint [path]"
+usage = 'arg "[path]" help="File or directory to lint" default="src/"'
+run = "bunx oxlint --type-aware ${usage_path}"
+
+[tasks."lint:fix"]
+description = "Run oxlint with auto-fix [path]"
+usage = 'arg "[path]" help="File or directory to lint" default="src/"'
+run = "bunx oxlint --type-aware --fix-dangerously ${usage_path}"
+
+[tasks.format]
+description = "Run oxfmt to format files [path]"
+usage = 'arg "[path]" help="File or directory to format" default="src/"'
+run = "bunx oxfmt ${usage_path}"
+
+[tasks."format:check"]
+description = "Check formatting without changes [path]"
+usage = 'arg "[path]" help="File or directory to check" default="src/"'
+run = "bunx oxfmt --check ${usage_path}"
+
+[tasks.typecheck]
+description = "Run tsgo type checking"
+run = "bunx tsgo --noEmit"
+
+[tasks.check]
+description = "Run all read-only checks (typecheck, lint, format:check)"
+run = '''
+#!/bin/bash
+exit_code=0
+declare -a pids=()
+declare -a names=()
+declare -a logs=()
+
+run_step() {
+  local name="$1"
+  shift
+  local log
+  log="$(mktemp -t mise-check.XXXXXX)"
+  names+=("$name")
+  logs+=("$log")
+  ("$@") >"$log" 2>&1 &
+  pids+=($!)
+}
+
+run_step "TypeCheck" bunx tsgo --noEmit
+run_step "Lint" bunx oxlint --type-aware src/
+run_step "Format Check" bunx oxfmt --check src/
+
+for i in "${!pids[@]}"; do
+  if ! wait "${pids[$i]}"; then
+    exit_code=1
+  fi
+  echo "=== ${names[$i]} ==="
+  cat "${logs[$i]}"
+  echo ""
+  rm -f "${logs[$i]}"
+done
+exit $exit_code
+'''
+
+[tasks.fix]
+description = "Apply auto-fixes (lint:fix, format)"
+run = '''
+#!/bin/bash
+exit_code=0
+declare -a pids=()
+declare -a names=()
+declare -a logs=()
+
+run_step() {
+  local name="$1"
+  shift
+  local log
+  log="$(mktemp -t mise-fix.XXXXXX)"
+  names+=("$name")
+  logs+=("$log")
+  ("$@") >"$log" 2>&1 &
+  pids+=($!)
+}
+
+run_step "TypeCheck" bunx tsgo --noEmit
+run_step "Lint Fix" bunx oxlint --type-aware --fix-dangerously src/
+run_step "Format" bunx oxfmt src/
+
+for i in "${!pids[@]}"; do
+  if ! wait "${pids[$i]}"; then
+    exit_code=1
+  fi
+  echo "=== ${names[$i]} ==="
+  cat "${logs[$i]}"
+  echo ""
+  rm -f "${logs[$i]}"
+done
+exit $exit_code
+'''
+
+[tasks.test]
+description = "Run unit tests with bun"
+run = "bun test"
+
+[tasks."test:e2e"]
+description = "Run Playwright E2E tests (requires dev server running)"
+run = "bunx playwright test"
+
+[tasks.healthcheck]
+description = "Quick check that dev server is running and rendering correctly"
+run = "bunx playwright test tests/e2e/smoke.spec.ts"
+
+[tasks.start]
+description = "Start the PM2-managed dev server"
+run = "pm2 start ecosystem.config.cjs"
+
+[tasks.stop]
+description = "Stop the PM2-managed dev server"
+run = "pm2 stop anki_code_cards"
+
+[tasks.restart]
+description = "Restart the PM2-managed dev server"
+run = "pm2 restart anki_code_cards"
+
+[tasks.logs]
+description = "Tail logs for the PM2-managed dev server"
+run = "pm2 logs anki_code_cards"

@@ -1,0 +1,11 @@
+{
+  "plugins": ["react", "typescript"],
+  "settings": {
+    "react": {
+      "runtime": "automatic"
+    }
+  },
+  "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  }
+}

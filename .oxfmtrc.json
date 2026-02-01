@@ -1,0 +1,9 @@
+{
+  "printWidth": 120,
+  "experimentalTailwindcss": {
+    "stylesheet": "./src/styles.css",
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn"],
+    "preserveWhitespace": true
+  }
+}
