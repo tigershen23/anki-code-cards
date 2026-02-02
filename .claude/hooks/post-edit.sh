@@ -23,4 +23,11 @@ if [[ "$file_path" =~ \.(ts|tsx|js|jsx)$ ]]; then
 fi
 
 # Run typecheck (project-wide, tsgo doesn't support single-file)
-mise typecheck 2>&1 || true
+# Filter output to only show errors for the edited file
+typecheck_output=$(mise typecheck 2>&1 || true)
+if [[ -n "$typecheck_output" ]]; then
+  echo "$typecheck_output" | awk -v fp="$file_path" '
+    index($0, fp) { printing=1 }
+    printing { print; if (/^$/) printing=0 }
+  '
+fi

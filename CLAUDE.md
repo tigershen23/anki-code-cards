@@ -1,83 +1,152 @@
 # Anki Code Cards
 
-Cards with beautiful code in vanilla Anki. Built with React and Bun.
+A cloze card editor for Anki with syntax-highlighted code. Built with React and Bun.
 
-## UI Components
+## Architecture Overview
 
-This project uses **shadcn/ui** with **Base UI** primitives (`@base-ui/react`). When building UI:
+```
+src/
+├── frontend.tsx          # App entry, mobile detection, providers
+├── context/
+│   └── EditorContext.tsx # Global state: content, preview mode, Shiki highlighter
+├── components/
+│   ├── EditorPanel.tsx   # Textarea with Tab/Enter handling
+│   ├── PreviewPanel.tsx  # Live preview with mode switching
+│   ├── OutputPanel.tsx   # Collapsible HTML output
+│   ├── Toolbar.tsx       # Buttons, shortcuts help overlay
+│   └── MobileNotSupported.tsx
+├── hooks/
+│   └── useKeyboardShortcuts.ts  # All hotkeys via react-hotkeys-hook
+├── lib/
+│   ├── cloze.ts          # Cloze parsing, extraction, manipulation
+│   ├── parser.ts         # Split content into prose/code blocks
+│   └── render.ts         # HTML generation for preview and output
+└── styles.css            # Catppuccin Latte theme variables
+```
 
-- Always reach for shadcn components first (`@/components/ui/*`)
-- Add new shadcn components via `bunx --bun shadcn@latest add <component>`
-- Components are unstyled by default — style with Tailwind utilities
-- Refer to [ui.shadcn.com](https://ui.shadcn.com) for available components
+## Key Concepts
+
+### Cloze Placeholder System
+
+The trickiest part of this codebase. Cloze markers (`{{c1::content}}`) must survive Shiki's tokenization intact. The solution:
+
+1. **Before Shiki**: Replace cloze markers with zero-width space placeholders
+2. **Run Shiki**: Tokenize the code (placeholders pass through as text)
+3. **After Shiki**: Replace placeholders with either:
+   - Raw cloze markers (for Anki output)
+   - Styled spans (for preview rendering)
+
+See `src/lib/render.ts` for the implementation. The placeholders use `\u200B` (zero-width space) which is invisible but survives HTML encoding.
+
+### Preview Modes
+
+- **Edit**: Shows cloze content with colored background and `c1` badge
+- **Hidden**: Active cloze shows `[...]` or `[hint]`, others show with dashed underline
+- **Revealed**: Active cloze highlighted green, others dashed underline
+
+### Output HTML
+
+Must be self-contained with ALL styles inline. No `<style>` blocks, no class names, no external resources. Anki processes cloze markers FIRST, then renders HTML - so markers can wrap across `<span>` tags.
+
+## Common Pitfalls
+
+### usehooks-ts v3 API Changes
+
+The library renamed several hooks:
+- `useDebounce` → `useDebounceValue` (returns `[value, setValue]` tuple)
+- Check exports before using: `grep "export" node_modules/usehooks-ts/dist/index.d.ts`
+
+### Shiki Type Conflicts
+
+The `shiki/bundle/web` package has different types than the main `shiki` package. We use a minimal `ShikiHighlighter` interface in `EditorContext.tsx` to avoid conflicts:
+
+```ts
+export interface ShikiHighlighter {
+  codeToHtml: (code: string, options: { lang: string; theme: string }) => string;
+}
+```
+
+Don't import `Highlighter` from `shiki` directly.
+
+### Array Index Access
+
+TypeScript strict mode flags `array[index]` as possibly undefined. Always add null checks:
+
+```ts
+// Bad
+const mode = modes[nextIndex];
+setMode(mode);
+
+// Good
+const mode = modes[nextIndex];
+if (mode) setMode(mode);
+```
+
+### Regex Capture Groups
+
+Capture groups from `RegExp.exec()` can be undefined even when matched. Always provide defaults:
+
+```ts
+const content = match[2] ?? "";
+```
 
 ## Development
 
 ### Dev Server (PM2-managed)
 
-The dev server runs under PM2 so you don't need to manage it in a separate shell:
-
 ```bash
-# Start server
-mise start
-
-# Stop server
-mise stop
-
-# Restart server
-mise restart
-
-# Tail logs
-mise logs
+mise start     # Start server
+mise stop      # Stop server
+mise restart   # Restart server
+mise logs      # Tail logs
 ```
 
 ### Testing
 
 ```bash
-# Unit tests
-mise test
-
-# E2E sanity check test (requires dev server running via PM2)
-mise test:e2e
-
-# Quick healthcheck (~1.3s) - use frequently during development
-mise healthcheck
+mise test        # Unit tests (bun test)
+mise test:e2e    # Playwright tests
+mise healthcheck # Quick sanity (~1.3s)
 ```
 
 ### Code Quality
 
-**Checks run automatically.** mise format, lint, and typecheck are executed automatically after file edits via agent hooks. You should never need to run these commands manually during normal development. The commands are still listed below for your reference
+Checks run automatically via agent hooks after file edits:
 
 ```bash
-# Run all checks (typecheck, lint, format)
-mise check
-
-# Individual tools
-mise typecheck    # Type checking with tsgo
-mise lint:fix     # Linting with oxlint
-mise format       # Format files with oxfmt
+mise typecheck   # tsgo --noEmit
+mise lint:fix    # oxlint --fix-dangerously
+mise format      # oxfmt
+mise check       # All three
 ```
 
-## Build Pipeline
+## UI Components
 
-- **Dev:** `bun --hot src/index.ts` (Bun.serve with HMR)
-- **Prod:** `bun build ./src/index.html --outdir ./dist --minify`
-- **Deploy:** GitHub Actions on push to master → GitHub Pages
+Uses **shadcn/ui** with **Base UI** primitives:
+
+- Add components: `bunx --bun shadcn@latest add <component>`
+- Existing: `textarea`, `sonner` (toast)
+- Style with Tailwind utilities
+- Catppuccin colors available as `ctp-*` (e.g., `bg-ctp-base`, `text-ctp-mauve`)
 
 ## Key Files
 
-| File                           | Purpose                        |
-| ------------------------------ | ------------------------------ |
-| `src/index.ts`                 | Dev server (Bun.serve)         |
-| `src/frontend.tsx`             | React app entry                |
-| `src/styles.css`               | Tailwind v4 stylesheet         |
-| `ecosystem.config.cjs`         | PM2 process configuration      |
-| `tests/e2e/smoke.spec.ts`      | Playwright smoke test          |
+| File | Purpose |
+|------|---------|
+| `src/lib/cloze.ts` | Cloze regex, parsing, position detection |
+| `src/lib/parser.ts` | Code fence detection, language normalization |
+| `src/lib/render.ts` | Placeholder system, HTML generation |
+| `src/context/EditorContext.tsx` | App state, Shiki initialization |
+| `src/hooks/useKeyboardShortcuts.ts` | All hotkey bindings |
+| `src/styles.css` | Catppuccin Latte CSS variables |
+| `tests/cloze.test.ts` | Cloze parser tests (24 tests) |
+| `tests/parser.test.ts` | Content parser tests (21 tests) |
 
-## Conventions
+## Supported Languages
 
-- When writing plans, use prose and instructions rather than code blocks
-- Code should be written during the coding step, not the planning step
+Shiki is configured for: `typescript`, `tsx`, `javascript`, `jsx`, `css`, `scss`, `html`
+
+Language aliases in parser: `ts` → typescript, `js` → javascript, `react` → tsx
 
 ## Imported Rules
 

@@ -96,7 +96,7 @@ exit $exit_code
 
 [tasks.test]
 description = "Run unit tests with bun"
-run = "bun test"
+run = "bun test tests/ --ignore tests/e2e/**/*"
 
 [tasks."test:e2e"]
 description = "Run Playwright E2E tests (requires dev server running)"
@@ -120,4 +120,4 @@ run = "pm2 restart anki_code_cards"
 
 [tasks.logs]
 description = "Tail logs for the PM2-managed dev server"
-run = "pm2 logs anki_code_cards"
+run = "pm2 logs anki_code_cards --lines 50"

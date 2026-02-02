@@ -949,3 +949,122 @@ Button.Icon = ({ name }: { name: string }) => (
 ---
 
 # Agent
+
+# Implementation
+
+## Summary
+
+Built a complete Anki Cloze Code Card Editor as specified. The app allows users to write mixed markdown + fenced code blocks with cloze deletions, preview the rendered card, and copy HTML to paste into Anki.
+
+## Files Created
+
+### Core Logic (`src/lib/`)
+- `cloze.ts` - Cloze parser with position awareness, extraction, and manipulation functions
+- `parser.ts` - Content parser splitting prose and code blocks, language detection
+- `render.ts` - Rendering pipeline for preview and output HTML with cloze placeholder system
+
+### Context & Hooks (`src/context/`, `src/hooks/`)
+- `EditorContext.tsx` - React Context for app state (content, preview mode, Shiki highlighter)
+- `useKeyboardShortcuts.ts` - All keyboard shortcuts via react-hotkeys-hook
+
+### Components (`src/components/`)
+- `EditorPanel.tsx` - Textarea with Tab/Enter handling
+- `PreviewPanel.tsx` - Live preview with cloze number selector for hidden/revealed modes
+- `OutputPanel.tsx` - Collapsible raw HTML output with copy button
+- `Toolbar.tsx` - Cloze insertion buttons, preview mode toggle, copy HTML, help overlay
+- `MobileNotSupported.tsx` - Desktop-only gate
+- `ui/sonner.tsx` - Updated toast styling for Catppuccin Latte
+- `ui/textarea.tsx` - shadcn textarea component
+
+### Tests (`tests/`)
+- `cloze.test.ts` - 24 tests for cloze parsing and manipulation
+- `parser.test.ts` - 21 tests for content parsing
+- `e2e/smoke.spec.ts` - Updated to check for editor textarea
+
+### Styles
+- `styles.css` - Catppuccin Latte theme variables and editor-specific styles
+
+## Key Decisions
+
+1. **Custom ShikiHighlighter interface** - Used a minimal interface instead of importing Shiki's types directly to avoid type conflicts between shiki/bundle/web and the main shiki package
+
+2. **useDebounceValue instead of useDebounce** - usehooks-ts v3 renamed the hook; updated all usages
+
+3. **Cloze placeholder system** - Uses zero-width spaces (`\u200B`) to create unique placeholders that survive Shiki tokenization, then restored/styled in post-processing
+
+4. **Sample content** - Pre-populated with the React hook example from the spec to demonstrate features on first load
+
+## Testing Notes
+
+- All 45 unit tests pass
+- E2E smoke test passes
+- Typecheck passes with tsgo
+
+---
+
+Manual Testing Checklist
+
+  Basic Editor Function
+
+  1. Type in editor - Text should appear, cursor should be responsive
+  2. Tab key - Should insert 2 spaces (not move focus)
+  3. Tab with selection - Should indent all selected lines
+  4. Shift+Tab with selection - Should dedent selected lines
+  5. Enter after { - Should auto-indent next line
+
+  Cloze Insertion
+
+  6. Cmd+Shift+K - Select text, press shortcut → should wrap in {{c1::...}}
+  7. Cmd+Shift+K again - Should increment to {{c2::...}}
+  8. Cmd+Shift+3 - Should insert specific {{c3::...}}
+  9. Empty selection + Cmd+Shift+K - Should insert {{c1::}} with cursor inside
+  10. Cmd+Shift+/ - Should insert comment cloze above current line with correct comment syntax (// for JS, /* */ for CSS)
+
+  Preview Panel
+
+  11. Live update - Changes in editor should reflect in preview (with ~150ms debounce)
+  12. Edit mode - Clozes show with lavender background and c1 badge
+  13. Hidden mode - Click toolbar button to switch; active cloze shows [...]
+  14. Revealed mode - Active cloze shows with green highlight
+  15. Cloze number buttons - In hidden/revealed mode, clicking 1/2/3 should switch which cloze is active
+  16. Syntax highlighting - Code blocks should have colored tokens
+
+  Output Panel
+
+  17. Expand panel - Click the bottom bar to expand
+  18. Copy button - Should copy HTML and show toast
+  19. Cmd+Enter - Should copy HTML from anywhere
+  20. Verify HTML - Expand and check that cloze markers are intact ({{c1::...}})
+
+  Anki Integration (Critical)
+
+  21. Paste in Anki - Copy HTML, paste into Anki's Text field (Cloze note type)
+  22. Preview in Anki - Card should render with syntax highlighting
+  23. Review in Anki - Cloze should hide/reveal correctly
+  24. Cross-platform - If possible, test on AnkiMobile or AnkiDroid
+
+  Edge Cases
+
+  25. Multiple code blocks - Each should highlight independently
+  26. Code with }} - e.g., const obj = {{ a: 1 }} should not break cloze parsing
+  27. Cloze spanning lines - Multi-line cloze content should work
+  28. Empty cloze - {{c1::}} should render as [...] in hidden mode
+  29. Cloze with hint - {{c1::answer::hint}} should show [hint] in hidden mode
+
+  UI/UX
+
+  30. Help overlay - Click ? button, verify shortcuts listed
+  31. Mobile detection - Resize browser below 768px, should show "Desktop Required" screen
+  32. Toast styling - Success toast should be visible and styled correctly
+
+  Regression
+
+  33. Healthcheck - mise healthcheck should pass
+  34. Unit tests - mise test should pass (45 tests)
+  35. Typecheck - mise typecheck should pass
+
+  ---
+  If any of these fail, the most likely culprits are:
+  - Cloze regex in src/lib/cloze.ts
+  - Placeholder replacement in src/lib/render.ts
+  - Keyboard event handling in src/components/EditorPanel.tsx or src/hooks/useKeyboardShortcuts.ts
