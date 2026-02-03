@@ -95,7 +95,7 @@ export function EditorPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col border-r border-ctp-surface0">
+    <div className="flex h-full min-h-0 flex-col border-r border-ctp-surface0">
       <div className="flex items-center border-b border-ctp-surface0 bg-ctp-mantle px-4 py-2">
         <span className="text-xs font-medium tracking-wider text-ctp-subtext0 uppercase">Editor</span>
       </div>
@@ -104,7 +104,7 @@ export function EditorPanel() {
         value={content}
         onChange={handleInput}
         onKeyDown={handleKeyDown}
-        className="editor-textarea h-full flex-1 resize-none rounded-none border-0 bg-white p-4 focus-visible:ring-0"
+        className="editor-textarea h-full min-h-0 flex-1 resize-none rounded-none border-0 bg-white p-4 focus-visible:ring-0 overflow-auto"
         placeholder="Write your card content here..."
         spellCheck={false}
       />

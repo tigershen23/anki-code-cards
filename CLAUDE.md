@@ -53,6 +53,7 @@ Must be self-contained with ALL styles inline. No `<style>` blocks, no class nam
 ### usehooks-ts v3 API Changes
 
 The library renamed several hooks:
+
 - `useDebounce` → `useDebounceValue` (returns `[value, setValue]` tuple)
 - Check exports before using: `grep "export" node_modules/usehooks-ts/dist/index.d.ts`
 
@@ -131,22 +132,26 @@ Uses **shadcn/ui** with **Base UI** primitives:
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `src/lib/cloze.ts` | Cloze regex, parsing, position detection |
-| `src/lib/parser.ts` | Code fence detection, language normalization |
-| `src/lib/render.ts` | Placeholder system, HTML generation |
-| `src/context/EditorContext.tsx` | App state, Shiki initialization |
-| `src/hooks/useKeyboardShortcuts.ts` | All hotkey bindings |
-| `src/styles.css` | Catppuccin Latte CSS variables |
-| `tests/cloze.test.ts` | Cloze parser tests (24 tests) |
-| `tests/parser.test.ts` | Content parser tests (21 tests) |
+| File                                | Purpose                                      |
+| ----------------------------------- | -------------------------------------------- |
+| `src/lib/cloze.ts`                  | Cloze regex, parsing, position detection     |
+| `src/lib/parser.ts`                 | Code fence detection, language normalization |
+| `src/lib/render.ts`                 | Placeholder system, HTML generation          |
+| `src/context/EditorContext.tsx`     | App state, Shiki initialization              |
+| `src/hooks/useKeyboardShortcuts.ts` | All hotkey bindings                          |
+| `src/styles.css`                    | Catppuccin Latte CSS variables               |
+| `tests/cloze.test.ts`               | Cloze parser tests (24 tests)                |
+| `tests/parser.test.ts`              | Content parser tests (21 tests)              |
 
 ## Supported Languages
 
 Shiki is configured for: `typescript`, `tsx`, `javascript`, `jsx`, `css`, `scss`, `html`
 
 Language aliases in parser: `ts` → typescript, `js` → javascript, `react` → tsx
+
+## Parallel Development
+
+Never freak out if you see changes unrelated to the changes you're making in the Git tree or otherwise. There is often parallel work happening on this repository and it's totally fine for there to be other changes. Just focus on the changes that you're making.
 
 ## Imported Rules
 
