@@ -112,12 +112,12 @@ run = "pm2 start ecosystem.config.cjs"
 
 [tasks.stop]
 description = "Stop the PM2-managed dev server"
-run = "pm2 stop anki_code_cards"
+run = "pm2 stop ecosystem.config.cjs"
 
 [tasks.restart]
 description = "Restart the PM2-managed dev server"
-run = "pm2 restart anki_code_cards"
+run = "pm2 restart ecosystem.config.cjs"
 
 [tasks.logs]
 description = "Tail logs for the PM2-managed dev server"
-run = "pm2 logs anki_code_cards --lines 50"
+run = "pm2 logs ecosystem.config.cjs --lines 50"

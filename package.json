@@ -11,7 +11,9 @@
     "typecheck": "tsgo --noEmit",
     "check": "bun run typecheck && bun run lint && bun run format:check",
     "test:e2e": "bunx playwright test",
-    "build": "bun build ./src/index.html --outdir ./dist --minify",
+    "build:app": "bun build ./src/index.html --outdir ./dist --minify",
+    "build:css": "bunx @tailwindcss/cli -i ./src/styles.css -o ./src/output.css --minify",
+    "build": "bun run build:css && bun run build:app",
     "prepare": "husky"
   },
   "devDependencies": {
