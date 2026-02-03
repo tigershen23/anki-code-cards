@@ -120,4 +120,4 @@ run = "pm2 restart ecosystem.config.cjs"
 
 [tasks.logs]
 description = "Tail logs for the PM2-managed dev server"
-run = "pm2 logs ecosystem.config.cjs --lines 50"
+run = "pm2 logs ecosystem.config.cjs --lines 50 --nostream"

@@ -203,6 +203,7 @@ Tricky parts:
 # Implementation
 - Added a second PM2 app (`anki_code_cards_tailwind`) to run the Tailwind CLI watcher alongside the Bun dev server.
 - Updated `mise` tasks to stop/restart/log the whole PM2 ecosystem so both apps are managed together.
+- Adjusted `mise logs` to grab the latest lines without tailing (`--nostream`).
 - Added `build:css` and `build:app` scripts and made `build` run both, ensuring Tailwind is minified before bundling.
 - Created the GitHub repo `tigershen23/anki-code-cards` via `gh repo create` and set `origin`.
 - Ran `bun run build` successfully (Bun emitted warnings about Tailwind at-rules in `src/styles.css`; this appears to be a pre-existing pattern because `styles.css` is bundled directly). No changes were made to address the warnings to keep scope tight.
