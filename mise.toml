@@ -96,15 +96,15 @@ exit $exit_code
 
 [tasks.test]
 description = "Run unit tests with bun"
-run = "bun test tests/ --ignore tests/e2e/**/*"
+run = "bun test tests/"
 
 [tasks."test:e2e"]
 description = "Run Playwright E2E tests (requires dev server running)"
-run = "bunx playwright test"
+run = "bunx playwright test tests_e2e/"
 
 [tasks.healthcheck]
 description = "Quick check that dev server is running and rendering correctly"
-run = "bunx playwright test tests/e2e/smoke.spec.ts"
+run = "bunx playwright test tests_e2e/smoke.spec.ts"
 
 [tasks.start]
 description = "Start the PM2-managed dev server"

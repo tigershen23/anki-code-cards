@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 
-export type PreviewMode = "edit" | "hidden" | "revealed";
-
 export interface ShikiHighlighter {
   codeToHtml: (code: string, options: { lang: string; theme: string }) => string;
 }
@@ -9,10 +7,6 @@ export interface ShikiHighlighter {
 interface EditorState {
   content: string;
   setContent: (content: string) => void;
-  previewMode: PreviewMode;
-  setPreviewMode: (mode: PreviewMode) => void;
-  activeClozeNumber: number;
-  setActiveClozeNumber: (n: number) => void;
   highlighter: ShikiHighlighter | null;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }
@@ -52,8 +46,6 @@ The hook returns an object with \`user\` (nullable) and \`loading\` state.
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(SAMPLE_CONTENT);
-  const [previewMode, setPreviewMode] = useState<PreviewMode>("edit");
-  const [activeClozeNumber, setActiveClozeNumber] = useState(1);
   const [highlighter, setHighlighter] = useState<ShikiHighlighter | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -71,10 +63,6 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       value={{
         content,
         setContent,
-        previewMode,
-        setPreviewMode,
-        activeClozeNumber,
-        setActiveClozeNumber,
         highlighter,
         textareaRef,
       }}

@@ -1,13 +1,20 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "sonner";
-import { useEditor, type PreviewMode } from "../context/EditorContext";
-import { renderContentForOutput, getClozeCount } from "../lib/render";
-import { getNextClozeNumber, insertClozeAtSelection } from "../lib/cloze";
+import { useEditor } from "../context/EditorContext";
+import { renderContentForOutput } from "../lib/render";
+import { getNextClozeNumber } from "../lib/cloze";
 import { detectCodeContext, getCommentSyntax } from "../lib/parser";
 
+// Helper to replace selection range with text while preserving undo history
+function replaceRange(textarea: HTMLTextAreaElement, start: number, end: number, text: string) {
+  textarea.focus();
+  textarea.setSelectionRange(start, end);
+  document.execCommand("insertText", false, text);
+}
+
 export function useKeyboardShortcuts() {
-  const { content, setContent, highlighter, previewMode, setPreviewMode, textareaRef } = useEditor();
+  const { content, highlighter, textareaRef } = useEditor();
   const [, copy] = useCopyToClipboard();
 
   const insertCloze = (clozeNumber?: number) => {
@@ -16,15 +23,24 @@ export function useKeyboardShortcuts() {
 
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const num = clozeNumber ?? getNextClozeNumber(content);
+    const num = clozeNumber ?? getNextClozeNumber(textarea.value);
+    const selectedText = textarea.value.slice(start, end);
 
-    const { newText, newCursorPosition } = insertClozeAtSelection(content, start, end, num);
-    setContent(newText);
+    const clozePrefix = `{{c${num}::`;
+    const clozeSuffix = "}}";
 
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = newCursorPosition;
-    }, 0);
+    if (selectedText.length === 0) {
+      replaceRange(textarea, start, end, clozePrefix + clozeSuffix);
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + clozePrefix.length;
+      }, 0);
+    } else {
+      replaceRange(textarea, start, end, clozePrefix + selectedText + clozeSuffix);
+      setTimeout(() => {
+        const newCursorPos = start + clozePrefix.length + selectedText.length + clozeSuffix.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
+    }
   };
 
   const insertCommentCloze = () => {
@@ -32,20 +48,19 @@ export function useKeyboardShortcuts() {
     if (!textarea) return;
 
     const cursorPos = textarea.selectionStart;
-    const context = detectCodeContext(content, cursorPos);
+    const text = textarea.value;
+    const context = detectCodeContext(text, cursorPos);
     const { prefix, suffix } = getCommentSyntax(context.language);
-    const clozeNum = getNextClozeNumber(content);
+    const clozeNum = getNextClozeNumber(text);
 
-    const lineStart = content.lastIndexOf("\n", cursorPos - 1) + 1;
+    const lineStart = text.lastIndexOf("\n", cursorPos - 1) + 1;
     const commentLine = context.indent + prefix + `{{c${clozeNum}::}}` + suffix + "\n";
-
-    const newContent = content.slice(0, lineStart) + commentLine + content.slice(lineStart);
-    setContent(newContent);
 
     const cursorInCloze = lineStart + context.indent.length + prefix.length + `{{c${clozeNum}::`.length;
 
+    replaceRange(textarea, lineStart, lineStart, commentLine);
+
     setTimeout(() => {
-      textarea.focus();
       textarea.selectionStart = textarea.selectionEnd = cursorInCloze;
     }, 0);
   };
@@ -57,16 +72,6 @@ export function useKeyboardShortcuts() {
       toast.success("Copied HTML to clipboard!");
     } else {
       toast.error("Failed to copy to clipboard");
-    }
-  };
-
-  const cyclePreviewMode = () => {
-    const modes: PreviewMode[] = ["edit", "hidden", "revealed"];
-    const currentIndex = modes.indexOf(previewMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    const nextMode = modes[nextIndex];
-    if (nextMode) {
-      setPreviewMode(nextMode);
     }
   };
 
@@ -160,6 +165,7 @@ export function useKeyboardShortcuts() {
     { enableOnFormTags: ["TEXTAREA"] },
   );
 
+  // mod+shift+/ - need both variants for cross-platform compatibility
   useHotkeys(
     "mod+shift+/",
     (e) => {
@@ -170,19 +176,24 @@ export function useKeyboardShortcuts() {
   );
 
   useHotkeys(
-    "mod+enter",
+    "mod+shift+slash",
     (e) => {
       e.preventDefault();
-      copyHtml();
+      insertCommentCloze();
     },
     { enableOnFormTags: ["TEXTAREA"] },
   );
 
   useHotkeys(
-    "mod+shift+p",
+    "mod+enter",
     (e) => {
-      e.preventDefault();
-      cyclePreviewMode();
+      const textarea = textareaRef.current;
+      // Only copy HTML if there's no selection
+      if (textarea && textarea.selectionStart === textarea.selectionEnd) {
+        e.preventDefault();
+        copyHtml();
+      }
+      // If there's a selection, let the default behavior happen (none for mod+enter)
     },
     { enableOnFormTags: ["TEXTAREA"] },
   );

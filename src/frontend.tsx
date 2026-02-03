@@ -6,7 +6,6 @@ import { useMediaQuery } from "usehooks-ts";
 import { EditorProvider } from "./context/EditorContext";
 import { EditorPanel } from "./components/EditorPanel";
 import { PreviewPanel } from "./components/PreviewPanel";
-import { OutputPanel } from "./components/OutputPanel";
 import { Toolbar } from "./components/Toolbar";
 import { MobileNotSupported } from "./components/MobileNotSupported";
 import { Toaster } from "./components/ui/sonner";
@@ -22,7 +21,6 @@ function AppContent() {
         <EditorPanel />
         <PreviewPanel />
       </div>
-      <OutputPanel />
     </div>
   );
 }
