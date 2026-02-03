@@ -38,3 +38,5 @@ test-results/
 playwright-report/
 
 tmp/**
+# Tailwind output CSS
+src/output.css
