@@ -104,7 +104,7 @@ export function EditorPanel() {
         value={content}
         onChange={handleInput}
         onKeyDown={handleKeyDown}
-        className="editor-textarea h-full min-h-0 flex-1 resize-none rounded-none border-0 bg-white p-4 focus-visible:ring-0 overflow-auto"
+        className="editor-textarea h-full min-h-0 flex-1 resize-none overflow-auto rounded-none border-0 bg-white p-4 focus-visible:ring-0"
         placeholder="Write your card content here..."
         spellCheck={false}
       />

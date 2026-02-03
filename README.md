@@ -15,19 +15,19 @@ A local web app for authoring Anki Cloze deletion cards with syntax-highlighted 
 2. Use `Cmd+Shift+K` to wrap selected text in a cloze, or `Cmd+Shift+1-9` for specific cloze numbers
 3. Toggle preview modes to see how the card will look during review
 4. Press `Cmd+Enter` to copy the HTML
-5. Paste into Anki's Text field (Cloze note type)
+5. Paste into Anki's Text field in the HTML editor(Cloze note type)
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd+Shift+K` | Insert new cloze (auto-increments) |
-| `Cmd+Shift+1-9` | Insert specific cloze number |
-| `Cmd+Shift+/` | Insert comment cloze above current line |
-| `Cmd+Enter` | Copy HTML to clipboard |
-| `Cmd+Shift+P` | Cycle preview mode (Edit → Hidden → Revealed) |
-| `Tab` | Insert 2 spaces / indent selected lines |
-| `Shift+Tab` | Dedent selected lines |
+| Shortcut        | Action                                        |
+| --------------- | --------------------------------------------- |
+| `Cmd+Shift+K`   | Insert new cloze (auto-increments)            |
+| `Cmd+Shift+1-9` | Insert specific cloze number                  |
+| `Cmd+Shift+/`   | Insert comment cloze above current line       |
+| `Cmd+Enter`     | Copy HTML to clipboard                        |
+| `Cmd+Shift+P`   | Cycle preview mode (Edit → Hidden → Revealed) |
+| `Tab`           | Insert 2 spaces / indent selected lines       |
+| `Shift+Tab`     | Dedent selected lines                         |
 
 ## Development
 

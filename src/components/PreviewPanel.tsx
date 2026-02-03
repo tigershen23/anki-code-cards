@@ -16,7 +16,7 @@ export function PreviewPanel() {
       <div className="flex items-center justify-between border-b border-ctp-surface0 bg-ctp-mantle px-4 py-2">
         <span className="text-xs font-medium tracking-wider text-ctp-subtext0 uppercase">Preview</span>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto bg-white p-4">
+      <div className="min-h-0 flex-1 overflow-auto bg-white p-4">
         {!highlighter ? (
           <div className="flex h-full items-center justify-center text-ctp-subtext0">Loading syntax highlighter...</div>
         ) : (

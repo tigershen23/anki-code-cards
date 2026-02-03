@@ -100,7 +100,7 @@ run = "bun test tests/"
 
 [tasks."test:e2e"]
 description = "Run Playwright E2E tests (requires dev server running)"
-run = "bunx playwright test tests_e2e/"
+run = "bunx playwright test tests_e2e/app.spec.ts"
 
 [tasks.healthcheck]
 description = "Quick check that dev server is running and rendering correctly"
