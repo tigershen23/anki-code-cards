@@ -121,3 +121,39 @@ run = "pm2 restart ecosystem.config.cjs"
 [tasks.logs]
 description = "Tail logs for the PM2-managed dev server"
 run = "pm2 logs ecosystem.config.cjs --lines 50 --nostream"
+
+[tasks.setup]
+description = "Install dependencies and sync LNAI configuration"
+run = '''
+#!/bin/bash
+set -euo pipefail
+
+if ! command -v bun >/dev/null 2>&1; then
+  echo "bun is required. Install Bun from https://bun.sh and retry."
+  exit 1
+fi
+
+bun install
+lnai sync
+'''
+
+[tasks.lnai]
+description = "Validate and sync LNAI configuration"
+run = '''
+#!/bin/bash
+set -euo pipefail
+
+lnai validate
+lnai sync
+'''
+
+[tasks.pre-commit]
+description = "Run pre-commit checks"
+run = '''
+#!/bin/bash
+set -euo pipefail
+
+mise fix
+mise test:e2e
+mise lnai
+'''

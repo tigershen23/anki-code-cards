@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-edit.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if there's an active spec that needs to be completed. Look for any files in .agent/specs/ that contain '### ACTIVE ###' at the top. If you find an active spec, read it and verify that all requirements have been implemented in the codebase. Check that the implementation matches what the spec describes. If there are no active specs, or if the active spec has been fully implemented, return {\"ok\": true}. If there's an active spec that is NOT fully implemented, return {\"ok\": false, \"reason\": \"Brief explanation of what's missing\"}.",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

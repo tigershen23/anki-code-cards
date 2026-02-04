@@ -1,0 +1,20 @@
+{
+  "tools": {
+    "claudeCode": {
+      "enabled": true,
+      "versionControl": true
+    },
+    "codex": {
+      "enabled": true,
+      "versionControl": false
+    },
+    "cursor": {
+      "enabled": true,
+      "versionControl": false
+    },
+    "opencode": {
+      "enabled": true,
+      "versionControl": false
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "tools": {
+    "claudeCode": {
+      "version": 1,
+      "tool": "claudeCode",
+      "generatedAt": "2026-02-04T00:11:47.115Z",
+      "files": [
+        {
+          "path": ".claude/CLAUDE.md",
+          "type": "symlink",
+          "target": "../.ai/AGENTS.md"
+        },
+        {
+          "path": ".claude/rules",
+          "type": "symlink",
+          "target": "../.ai/rules"
+        },
+        {
+          "path": ".claude/hooks/post-edit.sh",
+          "type": "symlink",
+          "target": "../../.ai/.claude/hooks/post-edit.sh"
+        },
+        {
+          "path": ".claude/settings.json",
+          "type": "symlink",
+          "target": "../.ai/.claude/settings.json"
+        }
+      ]
+    },
+    "codex": {
+      "version": 1,
+      "tool": "codex",
+      "generatedAt": "2026-02-04T00:11:47.117Z",
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "type": "symlink",
+          "target": ".ai/AGENTS.md"
+        }
+      ]
+    },
+    "cursor": {
+      "version": 1,
+      "tool": "cursor",
+      "generatedAt": "2026-02-04T00:11:47.118Z",
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "type": "symlink",
+          "target": ".ai/AGENTS.md"
+        },
+        {
+          "path": ".cursor/rules/bun.mdc",
+          "type": "text",
+          "hash": "7a124b4c97b22a3b7c2b905c14d10caecd095084a6f23afffb7d65da87591d18"
+        }
+      ]
+    },
+    "opencode": {
+      "version": 1,
+      "tool": "opencode",
+      "generatedAt": "2026-02-04T00:11:47.121Z",
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "type": "symlink",
+          "target": ".ai/AGENTS.md"
+        },
+        {
+          "path": ".opencode/rules",
+          "type": "symlink",
+          "target": "../.ai/rules"
+        },
+        {
+          "path": "opencode.json",
+          "type": "json",
+          "hash": "457f9d3db8efe2164b694ae542ab9a71fb29990e42008b09ab0929732edb08a0"
+        }
+      ]
+    }
+  }
+}

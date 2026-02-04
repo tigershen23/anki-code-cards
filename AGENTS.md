@@ -1,1 +1,1 @@
-CLAUDE.md
+.ai/AGENTS.md
