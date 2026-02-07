@@ -1,3 +1,8 @@
+/**
+ * E2E fixture runner: validates preview/output HTML against golden files.
+ *
+ * Why: ensures rendering changes don't silently break Anki output formatting.
+ */
 import { expect, test } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";

@@ -1,3 +1,9 @@
+/**
+ * Lightweight parser for splitting content into prose/code blocks.
+ *
+ * Why: we need stable, index-aware boundaries for rendering and for editor
+ * actions (like comment clozes) without pulling in a full markdown parser.
+ */
 export type BlockType = "prose" | "code";
 
 export interface Block {
@@ -77,6 +83,7 @@ export function parseContent(text: string): Block[] {
   return blocks;
 }
 
+// Determine whether the cursor is inside a code block and capture line context.
 export function detectCodeContext(
   text: string,
   cursorPosition: number,
@@ -85,7 +92,6 @@ export function detectCodeContext(
 
   for (const block of blocks) {
     if (block.type === "code" && cursorPosition >= block.startIndex && cursorPosition <= block.endIndex) {
-      const lines = text.slice(0, cursorPosition).split("\n");
       const currentLineStart = text.lastIndexOf("\n", cursorPosition - 1) + 1;
       const currentLine = text.slice(currentLineStart, cursorPosition);
       const indent = currentLine.match(/^(\s*)/)?.[1] || "";
@@ -99,7 +105,6 @@ export function detectCodeContext(
     }
   }
 
-  const lines = text.slice(0, cursorPosition).split("\n");
   const currentLineStart = text.lastIndexOf("\n", cursorPosition - 1) + 1;
   const currentLine = text.slice(currentLineStart, cursorPosition);
   const indent = currentLine.match(/^(\s*)/)?.[1] || "";

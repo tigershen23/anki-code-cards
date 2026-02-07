@@ -12,6 +12,10 @@
       "enabled": true,
       "versionControl": false
     },
+    "copilot": {
+      "enabled": true,
+      "versionControl": false
+    },
     "opencode": {
       "enabled": true,
       "versionControl": false

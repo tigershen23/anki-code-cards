@@ -1,11 +1,10 @@
+// Top toolbar with app actions and help controls.
 import { useState } from "react";
-import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "sonner";
 import { Copy } from "lucide-react";
-import { useEditor } from "../context/EditorContext";
-import { renderContentForOutput } from "../lib/render";
+import { useCopyHtml } from "../hooks/useCopyHtml";
 import { InfoPopover } from "./InfoPopover";
 import { KeyboardShortcutsPopover } from "./KeyboardShortcutsPopover";
+import { Button } from "./ui/button";
 
 const FTU_STORAGE_KEY = "anki-code-cards-ftu-dismissed";
 
@@ -18,8 +17,7 @@ function getInitialInfoOpen(): boolean {
 }
 
 export function Toolbar() {
-  const { content, highlighter } = useEditor();
-  const [, copy] = useCopyToClipboard();
+  const copyHtml = useCopyHtml();
   const [infoOpen, setInfoOpen] = useState(getInitialInfoOpen);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
@@ -35,13 +33,7 @@ export function Toolbar() {
   };
 
   const handleCopyHtml = async () => {
-    const outputHtml = renderContentForOutput(content, highlighter);
-    const success = await copy(outputHtml);
-    if (success) {
-      toast.success("Copied HTML to clipboard");
-    } else {
-      toast.error("Failed to copy");
-    }
+    await copyHtml();
   };
 
   return (
@@ -51,14 +43,10 @@ export function Toolbar() {
         <InfoPopover open={infoOpen} onOpenChange={handleInfoOpenChange} />
         <KeyboardShortcutsPopover open={keyboardOpen} onOpenChange={setKeyboardOpen} />
       </div>
-      <button
-        onClick={handleCopyHtml}
-        className="flex items-center gap-1 rounded bg-ctp-blue px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-ctp-sapphire"
-        title="Copy HTML (Cmd+Enter)"
-      >
+      <Button onClick={handleCopyHtml} title="Copy HTML (Cmd+Enter)">
         <Copy size={12} />
         Copy HTML
-      </button>
+      </Button>
     </div>
   );
 }

@@ -4,7 +4,7 @@
     "claudeCode": {
       "version": 1,
       "tool": "claudeCode",
-      "generatedAt": "2026-02-04T00:11:47.115Z",
+      "generatedAt": "2026-02-07T23:20:30.000Z",
       "files": [
         {
           "path": ".claude/CLAUDE.md",
@@ -31,7 +31,7 @@
     "codex": {
       "version": 1,
       "tool": "codex",
-      "generatedAt": "2026-02-04T00:11:47.117Z",
+      "generatedAt": "2026-02-07T23:20:30.001Z",
       "files": [
         {
           "path": "AGENTS.md",
@@ -43,7 +43,7 @@
     "cursor": {
       "version": 1,
       "tool": "cursor",
-      "generatedAt": "2026-02-04T00:11:47.118Z",
+      "generatedAt": "2026-02-07T23:20:30.002Z",
       "files": [
         {
           "path": "AGENTS.md",
@@ -60,7 +60,7 @@
     "opencode": {
       "version": 1,
       "tool": "opencode",
-      "generatedAt": "2026-02-04T00:11:47.121Z",
+      "generatedAt": "2026-02-07T23:20:30.003Z",
       "files": [
         {
           "path": "AGENTS.md",
@@ -76,6 +76,23 @@
           "path": "opencode.json",
           "type": "json",
           "hash": "457f9d3db8efe2164b694ae542ab9a71fb29990e42008b09ab0929732edb08a0"
+        }
+      ]
+    },
+    "copilot": {
+      "version": 1,
+      "tool": "copilot",
+      "generatedAt": "2026-02-07T23:20:30.003Z",
+      "files": [
+        {
+          "path": ".github/copilot-instructions.md",
+          "type": "symlink",
+          "target": "../.ai/AGENTS.md"
+        },
+        {
+          "path": ".github/instructions/bun.instructions.md",
+          "type": "text",
+          "hash": "6e426253ee0a55734df6ccd1872f8f5d9bcec9b500620162b21a03fceb00e715"
         }
       ]
     }

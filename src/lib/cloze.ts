@@ -1,3 +1,9 @@
+/**
+ * Cloze parsing and manipulation utilities.
+ *
+ * Why: cloze markers are central to Anki output, and we need consistent
+ * parsing for rendering, numbering, and editor actions.
+ */
 export interface ClozeMatch {
   clozeNumber: number;
   content: string;

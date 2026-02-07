@@ -1,3 +1,4 @@
+// Global editor state and Shiki highlighter lifecycle.
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 
 export interface ShikiHighlighter {
@@ -50,6 +51,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
+    // oxlint-disable-next-line typescript/no-floating-promises
     import("shiki/bundle/web").then(({ createHighlighter }) =>
       createHighlighter({
         themes: ["catppuccin-latte"],

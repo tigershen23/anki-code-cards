@@ -40,3 +40,11 @@ playwright-report/
 tmp/**
 # Tailwind output CSS
 src/output.css
+# lnai-generated
+.cursor/rules/bun.mdc
+.github/copilot-instructions.md
+.github/instructions/bun.instructions.md
+.opencode/rules
+AGENTS.md
+opencode.json
+# end lnai-generated

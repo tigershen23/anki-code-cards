@@ -1,3 +1,4 @@
+// Usage: pm2 run ecosystem.config.cjs
 module.exports = {
   apps: [
     {

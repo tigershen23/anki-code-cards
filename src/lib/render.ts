@@ -1,13 +1,36 @@
-import { parseContent, type Block } from "./parser";
 import { parseClozes } from "./cloze";
+import { parseContent, type Block } from "./parser";
 import type { ShikiHighlighter } from "../context/EditorContext";
 
-// Use single zero-width space as delimiter - simple and won't be split
+/**
+ * Rendering pipeline:
+ * Input: raw editor text + optional Shiki highlighter.
+ * Step 1: split text into prose/code blocks.
+ * Step 2: replace cloze markers with zero-width sentinels before formatting.
+ * Step 3: render each block (Shiki for code when available, fallback otherwise).
+ * Step 4: clean marker fragments that Shiki may split across tags, then restore
+ * cloze syntax as raw `{{cN::...}}` markers.
+ * Output: one self-contained HTML string with inline styles.
+ *
+ * `renderContentForPreview` is the live UI path (highlighter can be null while loading).
+ * `renderContentForOutput` is the clipboard path for Anki export.
+ */
+
 const ZWS = "\u200B";
 const MARKER_START = `${ZWS}CLZS`;
 const MARKER_NUM_END = `N${ZWS}`;
 const MARKER_HINT = `${ZWS}CLZH`;
 const MARKER_END = `${ZWS}CLZE${ZWS}`;
+
+const WRAPPER_STYLE =
+  "font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px; line-height: 1.5; color: #4c4f69; text-align: left;";
+const PRE_STYLE = "background: #eff1f5; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 8px 0;";
+const CODE_STYLE =
+  "font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px;";
+const INLINE_CODE_STYLE =
+  "font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; background: #e6e9ef; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;";
+const HR_STYLE = "border: none; border-top: 1px solid #ccd0da; margin: 12px 0;";
+const PARAGRAPH_STYLE = "margin: 8px 0;";
 
 interface RenderOptions {
   highlighter: ShikiHighlighter | null;
@@ -20,6 +43,10 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function extractAndReplaceClozes(text: string): { processedText: string } {
@@ -46,10 +73,7 @@ function extractAndReplaceClozes(text: string): { processedText: string } {
   return { processedText };
 }
 
-// Clean up any HTML tags that got inserted into our markers by Shiki
 function cleanMarkers(html: string): string {
-  // Remove any HTML tags that appear inside our markers
-  // Pattern: marker characters potentially interspersed with <span> tags
   return html
     .replace(/\u200B(<[^>]*>)*C(<[^>]*>)*L(<[^>]*>)*Z(<[^>]*>)*S/g, MARKER_START)
     .replace(/N(<[^>]*>)*\u200B/g, MARKER_NUM_END)
@@ -57,10 +81,9 @@ function cleanMarkers(html: string): string {
     .replace(/\u200B(<[^>]*>)*C(<[^>]*>)*L(<[^>]*>)*Z(<[^>]*>)*E(<[^>]*>)*\u200B/g, MARKER_END);
 }
 
-function restoreClozesForOutput(html: string): string {
+function restoreClozes(html: string): string {
   let result = cleanMarkers(html);
 
-  // Replace markers with cloze syntax
   result = result.replace(
     new RegExp(`${escapeRegex(MARKER_START)}(\\d+)${escapeRegex(MARKER_NUM_END)}`, "g"),
     "{{c$1::",
@@ -74,27 +97,6 @@ function restoreClozesForOutput(html: string): string {
   return result;
 }
 
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function renderClozesForPreview(html: string): string {
-  let result = cleanMarkers(html);
-
-  // Match: START + num + NUM_END + content + (optional: HINT + hint + NUM_END) + END
-  const pattern = new RegExp(
-    `${escapeRegex(MARKER_START)}(\\d+)${escapeRegex(MARKER_NUM_END)}(.*?)(?:${escapeRegex(MARKER_HINT)}[^${ZWS}]*?${escapeRegex(MARKER_NUM_END)})?${escapeRegex(MARKER_END)}`,
-    "gs",
-  );
-
-  result = result.replace(pattern, (_, clozeNum, content) => {
-    const num = parseInt(clozeNum, 10);
-    return `<span style="background: rgba(114,135,253,0.15); border-bottom: 2px solid #7287fd; padding: 1px 2px; border-radius: 2px;"><span style="color: #7287fd; font-size: 0.75em; font-weight: 600; vertical-align: super;">c${num}</span>${content}</span>`;
-  });
-
-  return result;
-}
-
 function highlightCode(code: string, language: string, highlighter: ShikiHighlighter): string {
   try {
     const html = highlighter.codeToHtml(code, {
@@ -104,82 +106,60 @@ function highlightCode(code: string, language: string, highlighter: ShikiHighlig
 
     return html
       .replace(/class="[^"]*"/g, "")
-      .replace(
-        /<pre[^>]*>/,
-        '<pre style="background: #eff1f5; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 8px 0;">',
-      )
-      .replace(
-        /<code[^>]*>/,
-        `<code style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px;">`,
-      );
+      .replace(/<pre[^>]*>/, `<pre style="${PRE_STYLE}">`)
+      .replace(/<code[^>]*>/, `<code style="${CODE_STYLE}">`);
   } catch {
-    return `<pre style="background: #eff1f5; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 8px 0;"><code style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px;">${escapeHtml(code)}</code></pre>`;
+    return `<pre style="${PRE_STYLE}"><code style="${CODE_STYLE}">${escapeHtml(code)}</code></pre>`;
   }
 }
 
-function renderCodeBlock(block: Block, highlighter: ShikiHighlighter | null, forOutput: boolean): string {
+function renderCodeBlock(block: Block, highlighter: ShikiHighlighter | null): string {
   const { processedText } = extractAndReplaceClozes(block.content);
 
   let html: string;
   if (highlighter && block.language && block.language !== "plaintext") {
     html = highlightCode(processedText, block.language, highlighter);
   } else {
-    html = `<pre style="background: #eff1f5; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 8px 0;"><code style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px;">${escapeHtml(processedText)}</code></pre>`;
+    html = `<pre style="${PRE_STYLE}"><code style="${CODE_STYLE}">${escapeHtml(processedText)}</code></pre>`;
   }
 
-  if (forOutput) {
-    return restoreClozesForOutput(html);
-  }
-
-  return renderClozesForPreview(html);
+  return restoreClozes(html);
 }
 
-function renderProse(content: string, forOutput: boolean): string {
+function renderProse(content: string): string {
   const { processedText } = extractAndReplaceClozes(content);
 
   let html = processedText
     .replace(/\*\*([^*]+)\*\*/g, '<strong style="font-weight: 700;">$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em style="font-style: italic;">$1</em>')
-    .replace(
-      /`([^`]+)`/g,
-      `<code style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; background: #e6e9ef; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;">$1</code>`,
-    )
-    .replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid #ccd0da; margin: 12px 0;">')
-    .replace(/\n\n/g, '</p><p style="margin: 8px 0;">')
+    .replace(/`([^`]+)`/g, `<code style="${INLINE_CODE_STYLE}">$1</code>`)
+    .replace(/^---$/gm, `<hr style="${HR_STYLE}">`)
+    .replace(/\n\n/g, `</p><p style="${PARAGRAPH_STYLE}">`)
     .replace(/\n/g, "<br>");
 
-  html = `<p style="margin: 8px 0;">${html}</p>`;
+  html = `<p style="${PARAGRAPH_STYLE}">${html}</p>`;
 
-  if (forOutput) {
-    return restoreClozesForOutput(html);
-  }
-
-  return renderClozesForPreview(html);
+  return restoreClozes(html);
 }
 
-export function renderContent(content: string, options: RenderOptions): string {
+function renderBlocks(content: string, highlighter: ShikiHighlighter | null): string {
   const blocks = parseContent(content);
-  const { highlighter } = options;
-
   const renderedBlocks = blocks.map((block) => {
     if (block.type === "code") {
-      return renderCodeBlock(block, highlighter, false);
+      return renderCodeBlock(block, highlighter);
     }
-    return renderProse(block.content, false);
+    return renderProse(block.content);
   });
 
-  return `<div style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px; line-height: 1.5; color: #4c4f69; text-align: left;">${renderedBlocks.join("")}</div>`;
+  return `<div style="${WRAPPER_STYLE}">${renderedBlocks.join("")}</div>`;
+}
+
+export function renderContentForPreview(content: string, options: RenderOptions): string {
+  // Live preview path. Highlighter may still be null while loading.
+  return renderBlocks(content, options.highlighter);
 }
 
 export function renderContentForOutput(content: string, highlighter: ShikiHighlighter | null): string {
-  const blocks = parseContent(content);
-
-  const renderedBlocks = blocks.map((block) => {
-    if (block.type === "code") {
-      return renderCodeBlock(block, highlighter, true);
-    }
-    return renderProse(block.content, true);
-  });
-
-  return `<div style="font-family: ui-monospace, 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Mono', 'Consolas', monospace; font-size: 14px; line-height: 1.5; color: #4c4f69; text-align: left;">${renderedBlocks.join("")}</div>`;
+  // Clipboard/export path used by Anki copy action.
+  return renderBlocks(content, highlighter);
 }

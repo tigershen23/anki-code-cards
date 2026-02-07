@@ -33,8 +33,11 @@ A local web app for authoring Anki Cloze deletion cards with syntax-highlighted 
 
 ### Setup
 
+1. Install [mise](https://mise.jdx.dev/) if you don't have it
+2. Run setup:
+
 ```bash
-bun install
+mise setup
 mise start
 ```
 
