@@ -16,6 +16,10 @@ export interface ClozeMatch {
 
 const CLOZE_REGEX = /\{\{c(\d+)::((?:(?!\{\{c\d+::)(?!\}\}).)*?)(?:::((?:(?!\}\}).)*?))?\}\}/gs;
 
+/**
+ * Parses all top-level cloze markers from a string.
+ * Example: `"A {{c1::B}} C"` -> `[{ clozeNumber: 1, content: "B", ... }]`.
+ */
 export function parseClozes(text: string): ClozeMatch[] {
   const matches: ClozeMatch[] = [];
   let match: RegExpExecArray | null;
@@ -47,6 +51,10 @@ export function parseClozes(text: string): ClozeMatch[] {
   return matches;
 }
 
+/**
+ * Returns the cloze that contains `cursorPosition`, if any.
+ * Example: `isInsideCloze("{{c1::abc}}", 6)` returns cloze `c1`.
+ */
 export function isInsideCloze(text: string, cursorPosition: number): ClozeMatch | null {
   const clozes = parseClozes(text);
 
@@ -59,6 +67,10 @@ export function isInsideCloze(text: string, cursorPosition: number): ClozeMatch 
   return null;
 }
 
+/**
+ * Finds the highest cloze number in `text`.
+ * Example: `"{{c1::a}} {{c3::b}}"` -> `3`.
+ */
 export function getMaxClozeNumber(text: string): number {
   const clozes = parseClozes(text);
 
@@ -69,14 +81,26 @@ export function getMaxClozeNumber(text: string): number {
   return Math.max(...clozes.map((c) => c.clozeNumber));
 }
 
+/**
+ * Returns the next available cloze number.
+ * Example: `"{{c2::x}}"` -> `3`.
+ */
 export function getNextClozeNumber(text: string): number {
   return getMaxClozeNumber(text) + 1;
 }
 
+/**
+ * Wraps `text` in a cloze marker.
+ * Example: `wrapWithCloze("value", 2)` -> `"{{c2::value}}"`.
+ */
 export function wrapWithCloze(text: string, clozeNumber: number): string {
   return `{{c${clozeNumber}::${text}}}`;
 }
 
+/**
+ * Inserts or wraps a selection with a specific cloze number.
+ * Example: selecting `"world"` in `"hello world"` with `1` -> `"hello {{c1::world}}"`.
+ */
 export function insertClozeAtSelection(
   fullText: string,
   selectionStart: number,
@@ -101,6 +125,10 @@ export function insertClozeAtSelection(
   return { newText, newCursorPosition };
 }
 
+/**
+ * Adds a hint to the cloze at the cursor when no hint exists yet.
+ * Example: `"{{c1::x}}"` with hint `"h"` -> `"{{c1::x::h}}"`.
+ */
 export function addHintToCloze(
   fullText: string,
   cursorPosition: number,

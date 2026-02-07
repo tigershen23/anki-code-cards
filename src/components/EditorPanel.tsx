@@ -1,6 +1,12 @@
 import { useEditor } from "../context/EditorContext";
-import { autoDedentClosing, dedentSelection, indentSelection, insertNewlineWithIndent } from "../lib/editorActions";
+import {
+  autoDedentClosing,
+  dedentSelection,
+  indentSelection,
+  insertNewlineWithIndent,
+} from "../lib/textSelectionTransforms";
 import { applyTextEdit } from "../lib/textareaMutations";
+import type { TextSelectionState } from "../lib/textSelection.types";
 import { PanelHeader } from "./PanelHeader";
 import { Textarea } from "./ui/textarea";
 
@@ -12,12 +18,11 @@ export function EditorPanel() {
     const value = textarea.value;
     const selectionStart = textarea.selectionStart;
     const selectionEnd = textarea.selectionEnd;
+    const selection: TextSelectionState = { text: value, selectionStart, selectionEnd };
 
     if (e.key === "Tab") {
       e.preventDefault();
-      const result = e.shiftKey
-        ? dedentSelection(value, selectionStart, selectionEnd)
-        : indentSelection(value, selectionStart, selectionEnd);
+      const result = e.shiftKey ? dedentSelection(selection) : indentSelection(selection);
       applyTextEdit(textarea, result);
       return;
     }
@@ -25,13 +30,13 @@ export function EditorPanel() {
     // Skip Enter handling if Cmd/Ctrl is pressed (let hotkey handle Cmd+Enter)
     if (e.key === "Enter" && !e.metaKey && !e.ctrlKey) {
       e.preventDefault();
-      const result = insertNewlineWithIndent(value, selectionStart, selectionEnd);
+      const result = insertNewlineWithIndent(selection);
       applyTextEdit(textarea, result, { inputType: "insertLineBreak" });
       return;
     }
 
     // Auto-dedent closing braces when typed as first non-whitespace character
-    const autoDedentResult = autoDedentClosing(value, selectionStart, selectionEnd, e.key);
+    const autoDedentResult = autoDedentClosing(selection, e.key);
     if (autoDedentResult) {
       e.preventDefault();
       applyTextEdit(textarea, autoDedentResult);

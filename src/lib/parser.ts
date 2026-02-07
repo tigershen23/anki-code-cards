@@ -34,6 +34,10 @@ export function normalizeLanguage(lang: string): string {
   return LANG_MAP[normalized] || "plaintext";
 }
 
+/**
+ * Splits markdown-like content into prose and fenced-code blocks.
+ * Example: `"hi\\n```ts\\na\\n```\\nbye"` -> `[prose("hi"), code("a"), prose("bye")]`.
+ */
 export function parseContent(text: string): Block[] {
   const blocks: Block[] = [];
   let lastIndex = 0;
@@ -83,7 +87,10 @@ export function parseContent(text: string): Block[] {
   return blocks;
 }
 
-// Determine whether the cursor is inside a code block and capture line context.
+/**
+ * Returns code/prose context and line indentation at the cursor.
+ * Example: inside a TS fence line `"  const x"` -> `{ inCode: true, language: "typescript", indent: "  " }`.
+ */
 export function detectCodeContext(
   text: string,
   cursorPosition: number,

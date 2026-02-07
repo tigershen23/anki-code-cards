@@ -1,16 +1,18 @@
 /**
- * Pure text-editing actions for the editor. These actions are then applied in textareaMutations.ts, which is the only place that directly manipulates the textarea content and selection.
+ * Pure text editing transforms for textarea content.
+ *
+ * These functions only compute the next text/selection state.
  */
 import { detectCodeContext, getCommentSyntax } from "./parser";
 import { getNextClozeNumber, insertClozeAtSelection as buildClozeInsertion } from "./cloze";
+import type { TextSelectionState } from "./textSelection.types";
 
-export interface EditResult {
-  text: string;
-  selectionStart: number;
-  selectionEnd: number;
-}
-
-export function indentSelection(text: string, selectionStart: number, selectionEnd: number): EditResult {
+/**
+ * Indents the current selection by two spaces.
+ * Example: `{ text: "a\\nb", selectionStart: 2, selectionEnd: 3 } -> { text: "a\\n  b", ... }`
+ */
+export function indentSelection(selection: TextSelectionState): TextSelectionState {
+  const { text, selectionStart, selectionEnd } = selection;
   if (selectionStart === selectionEnd) {
     const newText = text.slice(0, selectionStart) + "  " + text.slice(selectionEnd);
     const cursor = selectionStart + 2;
@@ -32,7 +34,12 @@ export function indentSelection(text: string, selectionStart: number, selectionE
   };
 }
 
-export function dedentSelection(text: string, selectionStart: number, selectionEnd: number): EditResult {
+/**
+ * Dedents selected lines by up to two spaces each.
+ * Example: `{ text: "  a\\n  b", selectionStart: 0, selectionEnd: 7 } -> { text: "a\\nb", ... }`
+ */
+export function dedentSelection(selection: TextSelectionState): TextSelectionState {
+  const { text, selectionStart, selectionEnd } = selection;
   const lineStart = text.lastIndexOf("\n", selectionStart - 1) + 1;
   const lineEnd = selectionStart === selectionEnd ? text.indexOf("\n", selectionStart) : selectionEnd;
   const actualLineEnd = lineEnd === -1 ? text.length : lineEnd;
@@ -54,7 +61,12 @@ export function dedentSelection(text: string, selectionStart: number, selectionE
   };
 }
 
-export function insertNewlineWithIndent(text: string, selectionStart: number, selectionEnd: number): EditResult {
+/**
+ * Inserts a newline and carries current indentation.
+ * Example: `if (x) {|` becomes `if (x) {\\n  |`.
+ */
+export function insertNewlineWithIndent(selection: TextSelectionState): TextSelectionState {
+  const { text, selectionStart, selectionEnd } = selection;
   const lineStart = text.lastIndexOf("\n", selectionStart - 1) + 1;
   const currentLine = text.slice(lineStart, selectionStart);
   const indent = currentLine.match(/^(\s*)/)?.[1] || "";
@@ -69,13 +81,15 @@ export function insertNewlineWithIndent(text: string, selectionStart: number, se
   return { text: newText, selectionStart: cursor, selectionEnd: cursor };
 }
 
+/**
+ * Dedents the current line before inserting a closing token.
+ * Example: line `"  |"` with key `"}"` becomes `"}|"`.
+ */
 export function autoDedentClosing(
-  text: string,
-  selectionStart: number,
-  _selectionEnd: number,
+  selection: TextSelectionState,
   closingChar: string,
-): EditResult | null {
-  // Only adjust indentation when the closing token is the first non-whitespace.
+): TextSelectionState | null {
+  const { text, selectionStart } = selection;
   if (!["]", "}", ")"].includes(closingChar)) {
     return null;
   }
@@ -95,19 +109,26 @@ export function autoDedentClosing(
   return { text: newText, selectionStart: cursor, selectionEnd: cursor };
 }
 
+/**
+ * Wraps selected content in a cloze marker.
+ * Example: `"hello world"` with `world` selected + `1` -> `"hello {{c1::world}}"`.
+ */
 export function insertClozeAtSelection(
-  text: string,
-  selectionStart: number,
-  selectionEnd: number,
+  selection: TextSelectionState,
   clozeNumber: number,
-): EditResult {
+): TextSelectionState {
+  const { text, selectionStart, selectionEnd } = selection;
   const { newText, newCursorPosition } = buildClozeInsertion(text, selectionStart, selectionEnd, clozeNumber);
   return { text: newText, selectionStart: newCursorPosition, selectionEnd: newCursorPosition };
 }
 
-export function insertCommentCloze(text: string, cursorPosition: number): EditResult {
-  // Insert a language-appropriate comment line with a new cloze marker.
-  const context = detectCodeContext(text, cursorPosition);
+/**
+ * Inserts a language-aware comment line with an empty cloze.
+ * Example in TS code: inserts `// {{cN::}}` above the current line.
+ */
+export function insertCommentCloze(selection: TextSelectionState): TextSelectionState {
+  const { text, selectionStart } = selection;
+  const context = detectCodeContext(text, selectionStart);
   const { prefix, suffix } = getCommentSyntax(context.language);
   const clozeNum = getNextClozeNumber(text);
   const lineStart = context.lineStart;

@@ -3,7 +3,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const shortcuts = [
   { label: "Insert new cloze", key: "⌘⇧K" },
-  { label: "Insert cloze 1-9", key: "⌘⇧1-9" },
   { label: "Comment cloze", key: "⌘⇧/" },
   { label: "Copy HTML", key: "⌘↵" },
   { label: "Indent/dedent", key: "Tab/⇧Tab" },

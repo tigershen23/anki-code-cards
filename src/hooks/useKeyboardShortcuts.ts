@@ -1,8 +1,9 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useEditor } from "../context/EditorContext";
 import { getNextClozeNumber } from "../lib/cloze";
-import { insertClozeAtSelection, insertCommentCloze as buildCommentCloze } from "../lib/editorActions";
+import { insertClozeAtSelection, insertCommentCloze as buildCommentCloze } from "../lib/textSelectionTransforms";
 import { applyTextEdit } from "../lib/textareaMutations";
+import type { TextSelectionState } from "../lib/textSelection.types";
 import { useCopyHtml } from "./useCopyHtml";
 
 export function useKeyboardShortcuts() {
@@ -12,14 +13,17 @@ export function useKeyboardShortcuts() {
     errorMessage: "Failed to copy to clipboard",
   });
 
-  const insertCloze = (clozeNumber?: number) => {
+  const insertCloze = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const num = clozeNumber ?? getNextClozeNumber(textarea.value);
-    const result = insertClozeAtSelection(textarea.value, start, end, num);
+    const selection: TextSelectionState = {
+      text: textarea.value,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd,
+    };
+    const num = getNextClozeNumber(textarea.value);
+    const result = insertClozeAtSelection(selection, num);
     applyTextEdit(textarea, result);
   };
 
@@ -27,8 +31,12 @@ export function useKeyboardShortcuts() {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    const cursorPos = textarea.selectionStart;
-    const result = buildCommentCloze(textarea.value, cursorPos);
+    const selection: TextSelectionState = {
+      text: textarea.value,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd,
+    };
+    const result = buildCommentCloze(selection);
     applyTextEdit(textarea, result);
   };
 
@@ -37,30 +45,6 @@ export function useKeyboardShortcuts() {
     (e) => {
       e.preventDefault();
       insertCloze();
-    },
-    { enableOnFormTags: ["TEXTAREA"] },
-  );
-
-  useHotkeys(
-    [
-      "mod+shift+1",
-      "mod+shift+2",
-      "mod+shift+3",
-      "mod+shift+4",
-      "mod+shift+5",
-      "mod+shift+6",
-      "mod+shift+7",
-      "mod+shift+8",
-      "mod+shift+9",
-    ],
-    (e, hotkeysEvent) => {
-      e.preventDefault();
-      const hotkey = hotkeysEvent?.hotkey ?? "";
-      const match = hotkey.match(/(\d)$/);
-      const clozeNumber = match ? parseInt(match[1] ?? "", 10) : NaN;
-      if (!Number.isNaN(clozeNumber)) {
-        insertCloze(clozeNumber);
-      }
     },
     { enableOnFormTags: ["TEXTAREA"] },
   );

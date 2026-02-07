@@ -5,11 +5,7 @@
  * deprecated `execCommand`, so we apply edits with `setRangeText` and emit an
  * `input` event to keep the browser history and React in sync.
  */
-export interface TextEditResult {
-  text: string;
-  selectionStart: number;
-  selectionEnd: number;
-}
+import type { TextSelectionState } from "./textSelection.types";
 
 interface ReplaceRangeOptions {
   selectionStart?: number;
@@ -18,6 +14,10 @@ interface ReplaceRangeOptions {
   data?: string;
 }
 
+/**
+ * Clamps selection indices so they always stay within `[0, valueLength]`.
+ * Example: `clampSelection(5, -1, 99) -> { selectionStart: 0, selectionEnd: 5 }`.
+ */
 function clampSelection(valueLength: number, start: number, end: number) {
   const nextStart = Math.max(0, Math.min(valueLength, start));
   const nextEnd = Math.max(0, Math.min(valueLength, end));
@@ -27,7 +27,10 @@ function clampSelection(valueLength: number, start: number, end: number) {
   };
 }
 
-// Emit an `input` event so React and the browser undo stack observe the change.
+/**
+ * Emits an `input` event so React receives updates from imperative textarea edits.
+ * Example: after `replaceRange(...)`, this triggers the component `onChange` path.
+ */
 function dispatchInput(textarea: HTMLTextAreaElement, options: { inputType?: string; data?: string } = {}) {
   const { inputType = "insertText", data } = options;
 
@@ -45,7 +48,10 @@ function dispatchInput(textarea: HTMLTextAreaElement, options: { inputType?: str
   textarea.dispatchEvent(fallbackEvent);
 }
 
-// Compute a minimal replacement span to reduce how much the undo stack changes.
+/**
+ * Computes the smallest changed span from `current` to `next`.
+ * Example: `"abc"` -> `"aXc"` returns `{ start: 1, end: 2, replacement: "X" }`.
+ */
 function diffText(current: string, next: string) {
   let start = 0;
   const currentLength = current.length;
@@ -70,12 +76,20 @@ function diffText(current: string, next: string) {
   };
 }
 
+/**
+ * Sets textarea selection after clamping to valid bounds.
+ * Example: `setSelection(textarea, 2, 4)` selects the third and fourth characters.
+ */
 export function setSelection(textarea: HTMLTextAreaElement, start: number, end = start) {
   textarea.focus();
   const { selectionStart, selectionEnd } = clampSelection(textarea.value.length, start, end);
   textarea.setSelectionRange(selectionStart, selectionEnd);
 }
 
+/**
+ * Replaces text in `[start, end)` and updates selection in one operation.
+ * Example: replacing `"world"` with `"friend"` in `"hello world"` yields `"hello friend"`.
+ */
 export function replaceRange(
   textarea: HTMLTextAreaElement,
   start: number,
@@ -96,13 +110,21 @@ export function replaceRange(
   dispatchInput(textarea, { inputType: options.inputType, data: options.data ?? text });
 }
 
+/**
+ * Inserts text at the current selection range.
+ * Example: cursor at index `3`, insert `"x"` into `"abc"` -> `"abcx"`.
+ */
 export function insertText(textarea: HTMLTextAreaElement, text: string, options: ReplaceRangeOptions = {}) {
   replaceRange(textarea, textarea.selectionStart, textarea.selectionEnd, text, options);
 }
 
+/**
+ * Applies a computed text/selection result with a minimal DOM replacement.
+ * Example: `{ text: "ab", selectionStart: 2, selectionEnd: 2 }` updates value and cursor.
+ */
 export function applyTextEdit(
   textarea: HTMLTextAreaElement,
-  result: TextEditResult,
+  result: TextSelectionState,
   options: { inputType?: string } = {},
 ) {
   const current = textarea.value;
