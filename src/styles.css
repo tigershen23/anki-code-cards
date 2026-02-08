@@ -149,3 +149,19 @@
   font-family: var(--font-mono);
   font-size: 14px;
 }
+
+.loading-ellipsis {
+  display: inline-block;
+  width: 1.5ch;
+  text-align: left;
+  animation: loading-ellipsis 1.2s steps(4, end) infinite;
+}
+
+@keyframes loading-ellipsis {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 1.5ch;
+  }
+}

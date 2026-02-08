@@ -1,5 +1,6 @@
 // Global editor state and Shiki highlighter lifecycle.
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
+import { getShikiHighlighter } from "../lib/shikiLoader";
 
 export interface ShikiHighlighter {
   codeToHtml: (code: string, options: { lang: string; theme: string }) => string;
@@ -9,6 +10,7 @@ interface EditorState {
   content: string;
   setContent: (content: string) => void;
   highlighter: ShikiHighlighter | null;
+  highlighterError: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }
 
@@ -48,17 +50,25 @@ The hook returns an object with \`user\` (nullable) and \`loading\` state.
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState(SAMPLE_CONTENT);
   const [highlighter, setHighlighter] = useState<ShikiHighlighter | null>(null);
+  const [highlighterError, setHighlighterError] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    // oxlint-disable-next-line typescript/no-floating-promises
-    import("shiki/bundle/web").then(({ createHighlighter }) =>
-      createHighlighter({
-        themes: ["catppuccin-latte"],
-        langs: ["typescript", "tsx", "javascript", "jsx", "css", "scss", "html"],
-      }).then(setHighlighter),
-    );
-  }, []);
+    if (highlighter || highlighterError) return;
+
+    let isCancelled = false;
+    void getShikiHighlighter()
+      .then((instance) => {
+        if (!isCancelled) setHighlighter(instance);
+      })
+      .catch(() => {
+        if (!isCancelled) setHighlighterError(true);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [highlighter, highlighterError]);
 
   return (
     <EditorContext.Provider
@@ -66,6 +76,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         content,
         setContent,
         highlighter,
+        highlighterError,
         textareaRef,
       }}
     >

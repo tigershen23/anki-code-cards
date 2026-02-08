@@ -85,10 +85,7 @@ export function insertNewlineWithIndent(selection: TextSelectionState): TextSele
  * Dedents the current line before inserting a closing token.
  * Example: line `"  |"` with key `"}"` becomes `"}|"`.
  */
-export function autoDedentClosing(
-  selection: TextSelectionState,
-  closingChar: string,
-): TextSelectionState | null {
+export function autoDedentClosing(selection: TextSelectionState, closingChar: string): TextSelectionState | null {
   const { text, selectionStart } = selection;
   if (!["]", "}", ")"].includes(closingChar)) {
     return null;
@@ -113,10 +110,7 @@ export function autoDedentClosing(
  * Wraps selected content in a cloze marker.
  * Example: `"hello world"` with `world` selected + `1` -> `"hello {{c1::world}}"`.
  */
-export function insertClozeAtSelection(
-  selection: TextSelectionState,
-  clozeNumber: number,
-): TextSelectionState {
+export function insertClozeAtSelection(selection: TextSelectionState, clozeNumber: number): TextSelectionState {
   const { text, selectionStart, selectionEnd } = selection;
   const { newText, newCursorPosition } = buildClozeInsertion(text, selectionStart, selectionEnd, clozeNumber);
   return { text: newText, selectionStart: newCursorPosition, selectionEnd: newCursorPosition };

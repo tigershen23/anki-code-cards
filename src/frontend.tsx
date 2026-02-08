@@ -10,9 +10,21 @@ import { Toolbar } from "./components/Toolbar";
 import { MobileNotSupported } from "./components/MobileNotSupported";
 import { Toaster } from "./components/ui/sonner";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useEditor } from "./context/EditorContext";
 
 function AppContent() {
+  const { highlighterError } = useEditor();
   useKeyboardShortcuts();
+
+  if (highlighterError) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-ctp-base p-8 text-center">
+        <p className="max-w-lg text-sm text-ctp-subtext0">
+          Unfortunately, your environment does not support Anki Code Cards.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col bg-ctp-base">

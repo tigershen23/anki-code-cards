@@ -14,13 +14,18 @@ export function PreviewPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <PanelHeader title="Preview" />
+      <PanelHeader
+        title="Preview"
+        right={
+          !highlighter ? (
+            <span className="text-xs normal-case text-ctp-subtext0">
+              highlighting<span className="loading-ellipsis" aria-hidden="true">...</span>
+            </span>
+          ) : null
+        }
+      />
       <div className="min-h-0 flex-1 overflow-auto bg-white p-4">
-        {!highlighter ? (
-          <div className="flex h-full items-center justify-center text-ctp-subtext0">Loading syntax highlighter...</div>
-        ) : (
-          <div className="preview-code" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
-        )}
+        <div className="preview-code" dangerouslySetInnerHTML={{ __html: renderedHtml }} />
       </div>
     </div>
   );

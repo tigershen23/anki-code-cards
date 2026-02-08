@@ -4,7 +4,7 @@ module.exports = {
     {
       name: "anki_code_cards",
       script: "bun",
-      args: "--hot src/index.ts",
+      args: "--hot --splitting src/index.ts",
       cwd: __dirname,
       watch: false,
       autorestart: true,
