@@ -18,8 +18,11 @@ export function PreviewPanel() {
         title="Preview"
         right={
           !highlighter ? (
-            <span className="text-xs normal-case text-ctp-subtext0">
-              highlighting<span className="loading-ellipsis" aria-hidden="true">...</span>
+            <span className="text-xs text-ctp-subtext0 normal-case">
+              highlighting
+              <span className="loading-ellipsis" aria-hidden="true">
+                ...
+              </span>
             </span>
           ) : null
         }
